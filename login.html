@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>问题自检平台 · 登录</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+html,body{height:100%}
+body{display:flex;overflow:hidden;background:#f6f9ff}
+/* ---------------- 左侧品牌插画区（图1复刻） ---------------- */
+.brand{flex:1.15;min-width:520px;position:relative;display:flex;flex-direction:column;justify-content:space-between;
+  background:linear-gradient(160deg,#e2ecfa 0%,#ecf3fd 45%,#f4f9ff 100%);padding:56px 60px 40px;overflow:hidden}
+.brand::before{content:"";position:absolute;right:-120px;top:-120px;width:380px;height:380px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.9),rgba(255,255,255,0) 70%)}
+.brand-title{font-size:34px;font-weight:800;color:#1c2b45;letter-spacing:2px}
+.brand-slogan{margin-top:14px;font-size:15px;color:#5b6b85;line-height:1.9}
+.brand-art{flex:1;display:flex;align-items:center;justify-content:center;min-height:300px}
+.brand-chips{display:flex;gap:18px;position:relative;z-index:2;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.85);border:1px solid #dfe9fb;
+  border-radius:12px;padding:12px 18px;font-size:14px;color:#2b3a55;box-shadow:0 6px 18px rgba(47,107,255,.08);font-weight:600}
+.chip .dot{width:20px;height:20px;border-radius:50%;background:#2f6bff;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.chip .dot svg{width:11px;height:11px}
+/* ---------------- 右侧登录卡（配色与左侧浅蓝白一体） ---------------- */
+.side{flex:1;min-width:430px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(180deg,#f5f9ff 0%,#e9f1fc 100%);padding:36px;overflow-y:auto}
+.card{width:100%;max-width:410px;background:#fff;border-radius:22px;padding:36px 42px 26px;
+  box-shadow:0 20px 50px rgba(96,140,210,.14),0 2px 10px rgba(120,155,220,.08)}
+.card h1{font-size:23px;font-weight:800;color:#1c2b45;text-align:center;margin-bottom:24px;letter-spacing:2px}
+/* 标签页（浅色分段控件，选中为扁平蓝） */
+.tabs{display:flex;gap:4px;background:#edf3fc;border-radius:12px;padding:4px;margin-bottom:24px}
+.tabs button{flex:1;border:0;background:transparent;color:#7c8aa5;padding:9px 4px;border-radius:9px;
+  font-size:13px;font-weight:600;cursor:pointer;transition:.2s;font-family:inherit;white-space:nowrap}
+.tabs button.on{background:#3b82f6;color:#fff;box-shadow:0 3px 10px rgba(59,130,246,.25)}
+.pane{display:none}.pane.on{display:block;animation:fade .3s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* 表单 */
+.fld{margin-bottom:22px}
+.fld label{display:block;font-size:13px;color:#8a97ad;margin-bottom:6px}
+.fld input{width:100%;border:none;border-bottom:1.5px solid #e3eaf5;padding:9px 2px;font-size:15px;color:#1c2b45;
+  outline:none;transition:border-color .2s;background:transparent}
+.fld input:focus{border-bottom-color:#2f6bff}
+.code-row{display:flex;align-items:flex-end;gap:12px}
+.codebtn{border:0;background:transparent;color:#2f6bff;font-size:13px;font-weight:600;cursor:pointer;
+  white-space:nowrap;padding:9px 0;font-family:inherit}
+.codebtn:disabled{color:#a5b1c4;cursor:not-allowed}
+.hint{font-size:12.5px;color:#2f6bff;margin:-14px 0 16px;line-height:1.5}
+.hint b{font-size:14px;letter-spacing:1px}
+.row{display:flex;align-items:center;justify-content:space-between;margin:2px 0 22px}
+.remember{display:flex;align-items:center;gap:7px;font-size:13px;color:#8a97ad;cursor:pointer;user-select:none}
+.remember input{accent-color:#2f6bff;width:15px;height:15px;cursor:pointer}
+.forgot{font-size:13px;color:#8a97ad;text-decoration:none;cursor:pointer}
+.forgot:hover{color:#2f6bff}
+.btn-login{width:100%;height:46px;border:none;border-radius:9px;cursor:pointer;font-size:17px;font-weight:700;color:#fff;
+  letter-spacing:10px;text-indent:10px;background:#3b82f6;box-shadow:0 6px 16px rgba(59,130,246,.28);
+  transition:transform .15s,box-shadow .15s,background .15s;font-family:inherit}
+.btn-login:hover{transform:translateY(-1px);background:#2f74ec;box-shadow:0 10px 22px rgba(59,130,246,.35)}
+.btn-login:active{transform:translateY(0)}
+.btn-login:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.agree2{margin-top:18px;text-align:center;font-size:12px;color:#a5b1c4}
+.guest-line{margin-top:14px;text-align:center}
+.guest-line a{font-size:13px;color:#2f6bff;text-decoration:none;cursor:pointer}
+.guest-line a:hover{text-decoration:underline}
+.err{margin:-6px 0 14px;font-size:13px;color:#e5484d;text-align:center;min-height:18px}
+/* 扫码 */
+.qrwrap{text-align:center;padding:2px 0 4px}
+.qrbox{width:196px;height:196px;margin:0 auto 12px;background:#fff;border:1px solid #e3eaf5;border-radius:16px;padding:10px;
+  box-shadow:0 10px 26px rgba(28,43,69,.10);position:relative;overflow:hidden}
+.qrbox canvas{width:100%;height:100%;display:block;border-radius:8px}
+.qrbox .scan{position:absolute;left:10px;right:10px;top:10px;height:3px;border-radius:3px;
+  background:linear-gradient(90deg,#3f8bff,#2563eb);box-shadow:0 0 10px rgba(47,107,255,.55);animation:scan 2.2s ease-in-out infinite}
+@keyframes scan{0%{top:12px}50%{top:172px}100%{top:12px}}
+.qrbox.done{display:grid;place-items:center;background:#e7f8ef}
+.qrbox .ok{font-size:44px}
+.qrtip{font-size:13px;color:#5b6b85;margin-bottom:8px}
+.qrtip b{color:#1c2b45}
+.qract{display:flex;gap:10px;justify-content:center;margin-top:10px}
+.qract button{font-size:12px;color:#7c8aa5;background:#fff;border:1px solid #e3eaf5;border-radius:9px;
+  padding:7px 13px;cursor:pointer;font-family:inherit;transition:.2s}
+.qract button:hover{border-color:#2f6bff;color:#2f6bff}
+.toast{position:fixed;left:50%;top:26px;transform:translateX(-50%);background:#1c2b45;color:#fff;font-size:13px;
+  padding:10px 20px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:99}
+.toast.show{opacity:.95}
+@media (max-width:960px){.brand{display:none}.side{min-width:100vw}}
+</style>
+</head>
+<body>
+
+<!-- 左侧：品牌插画（保持不变） -->
+<section class="brand">
+  <div>
+    <div class="brand-title">问题自检平台</div>
+    <div class="brand-slogan">风险早识别，流程可追踪，整改有依据<br>风险早识别，流程可追踪，整改有依据</div>
+  </div>
+  <div class="brand-art">
+    <svg width="430" height="330" viewBox="0 0 430 330" fill="none">
+      <defs>
+        <linearGradient id="gShield" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#6ea8ff"/><stop offset="1" stop-color="#2563eb"/>
+        </linearGradient>
+        <linearGradient id="gClip" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#8fbcff"/><stop offset="1" stop-color="#3b82f6"/>
+        </linearGradient>
+        <linearGradient id="gPaper" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#eaf2ff"/>
+        </linearGradient>
+        <linearGradient id="gBase" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d5e5fb"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="205" cy="286" rx="150" ry="30" fill="url(#gBase)"/>
+      <ellipse cx="205" cy="280" rx="104" ry="20" fill="#c9dcf8"/>
+      <ellipse cx="205" cy="276" rx="70" ry="13" fill="#ffffff"/>
+      <g transform="rotate(-4 150 180)">
+        <rect x="88" y="62" width="128" height="176" rx="14" fill="url(#gPaper)" stroke="#cfe0f8"/>
+        <rect x="128" y="50" width="48" height="22" rx="8" fill="url(#gClip)"/>
+        <circle cx="152" cy="61" r="5" fill="#dbeafe"/>
+        <rect x="104" y="96" width="14" height="14" rx="4" fill="#2f6bff"/>
+        <path d="M107 103l3.4 3.6 6-7" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+        <rect x="126" y="99" width="74" height="8" rx="4" fill="#c9dcf8"/>
+        <rect x="104" y="128" width="14" height="14" rx="4" fill="#2f6bff"/>
+        <path d="M107 135l3.4 3.6 6-7" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+        <rect x="126" y="131" width="60" height="8" rx="4" fill="#c9dcf8"/>
+        <rect x="104" y="160" width="14" height="14" rx="4" fill="#2f6bff"/>
+        <path d="M107 167l3.4 3.6 6-7" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+        <rect x="126" y="163" width="68" height="8" rx="4" fill="#c9dcf8"/>
+        <rect x="104" y="192" width="14" height="14" rx="4" fill="#dbeafe"/>
+        <rect x="126" y="195" width="52" height="8" rx="4" fill="#e4eefc"/>
+      </g>
+      <g transform="rotate(5 300 170)">
+        <path d="M300 84c22 12 44 18 62 20 0 66-22 112-62 138-40-26-62-72-62-138 18-2 40-8 62-20z" fill="url(#gShield)"/>
+        <path d="M300 96c18 10 36 15 50 17 0 55-18 94-50 116-32-22-50-61-50-116 14-2 32-7 50-17z" fill="#ffffff" opacity=".14"/>
+        <path d="M276 172l17 17 32-34" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+      <rect x="52" y="92" width="30" height="30" rx="8" fill="#ffffff" stroke="#cfe0f8" transform="rotate(-10 67 107)"/>
+      <path d="M61 107l4 4 8-9" stroke="#2f6bff" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <rect x="368" y="230" width="24" height="24" rx="6" fill="#dbeafe" transform="rotate(14 380 242)"/>
+      <rect x="330" y="52" width="18" height="18" rx="5" fill="#eaf2ff" transform="rotate(18 339 61)"/>
+      <circle cx="392" cy="120" r="7" fill="#cfe0f8"/>
+      <circle cx="46" cy="200" r="5" fill="#dbeafe"/>
+      <path d="M330 300c40-8 76-8 108-2" stroke="#d5e5fb" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="brand-chips">
+    <div class="chip"><span class="dot"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></span>自检任务管理</div>
+    <div class="chip"><span class="dot"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></span>问题分类诊断</div>
+    <div class="chip"><span class="dot"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></span>风险报告闭环</div>
+  </div>
+</section>
+
+<!-- 右侧：登录卡（四种登录方式） -->
+<section class="side">
+  <div class="card">
+    <h1>欢迎登录</h1>
+    <div class="tabs" id="tabs">
+      <button data-tab="pwd" class="on">账号登录</button>
+      <button data-tab="phone">验证码登录</button>
+      <button data-tab="wx">微信扫码</button>
+      <button data-tab="ali">支付宝扫码</button>
+    </div>
+
+    <!-- 账号密码 -->
+    <div class="pane on" id="pane-pwd">
+      <div class="fld">
+        <label>账号</label>
+        <input id="account" autocomplete="username" placeholder="请输入账号">
+      </div>
+      <div class="fld">
+        <label>密码</label>
+        <input id="password" type="password" autocomplete="current-password" placeholder="请输入密码">
+      </div>
+      <div class="row">
+        <label class="remember"><input id="remember" type="checkbox" checked>记住登录状态</label>
+        <a class="forgot" id="forgot">忘记密码</a>
+      </div>
+      <div class="err" id="errPwd"></div>
+      <button class="btn-login" id="btnLogin">登 录</button>
+      <div class="agree2">登录即表示同意使用规范</div>
+    </div>
+
+    <!-- 手机验证码 -->
+    <div class="pane" id="pane-phone">
+      <div class="fld">
+        <label>手机号</label>
+        <input id="phone" type="tel" inputmode="numeric" maxlength="11" placeholder="请输入 11 位手机号">
+      </div>
+      <div class="code-row">
+        <div class="fld" style="flex:1">
+          <label>验证码</label>
+          <input id="code" type="text" inputmode="numeric" maxlength="6" placeholder="6 位验证码">
+        </div>
+        <button class="codebtn" id="getCode">获取验证码</button>
+      </div>
+      <div class="hint" id="codeHint" style="display:none"></div>
+      <div class="err" id="errPhone"></div>
+      <button class="btn-login" id="phoneLogin" style="letter-spacing:2px">登录 / 注册</button>
+      <div class="agree2">未注册手机号验证通过后自动注册</div>
+    </div>
+
+    <!-- 微信扫码 -->
+    <div class="pane" id="pane-wx">
+      <div class="qrwrap">
+        <div class="qrbox" id="qrWx"><canvas id="cvWx"></canvas><div class="scan"></div></div>
+        <div class="qrtip" id="tipWx">请使用 <b>微信</b> 扫一扫登录</div>
+        <div class="qract">
+          <button id="refreshWx">↻ 刷新二维码</button>
+          <button id="simWx">演示：模拟扫码成功</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 支付宝扫码 -->
+    <div class="pane" id="pane-ali">
+      <div class="qrwrap">
+        <div class="qrbox" id="qrAli"><canvas id="cvAli"></canvas><div class="scan"></div></div>
+        <div class="qrtip" id="tipAli">请使用 <b>支付宝</b> 扫一扫登录</div>
+        <div class="qract">
+          <button id="refreshAli">↻ 刷新二维码</button>
+          <button id="simAli">演示：模拟扫码成功</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="guest-line"><a id="guest">游客一键体验 →</a></div>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+<script>
+const $=id=>document.getElementById(id);
+const TOKEN_KEY='qc_token',USER_KEY='qc_user',GUEST_KEY='qc_guest_token';
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2200);}
+/* 游客升级：正式登录后把游客数据并入新账号（失败不阻断） */
+async function saveSession(token,user){
+  try{
+    const gt=localStorage.getItem(GUEST_KEY);
+    if(gt&&user&&user.provider!=='guest'){
+      const r=await fetch('/api/auth/migrate',{method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+        body:JSON.stringify({guest_token:gt})});
+      const d=await r.json().catch(()=>({}));
+      if(d&&d.migrated)toast('已把游客身份的 '+((d.docs||0)+(d.sessions||0))+' 条记录并入你的账号');
+      localStorage.removeItem(GUEST_KEY);
+    }
+  }catch(e){}
+  localStorage.setItem(TOKEN_KEY,token);
+  localStorage.setItem(USER_KEY,JSON.stringify(user));
+  location.href='index.html';
+}
+
+/* ---------------- 标签切换 ---------------- */
+let activeTab='pwd',pollTimer=null,currentTicket=null;
+function switchTab(tab){
+  activeTab=tab;
+  if(pollTimer){clearInterval(pollTimer);pollTimer=null;}
+  $('tabs').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.tab===tab));
+  ['pwd','phone','wx','ali'].forEach(t=>$('pane-'+t).classList.toggle('on',t===tab));
+  if(tab==='wx')startScan('wx','cvWx','qrWx','tipWx');
+  if(tab==='ali')startScan('ali','cvAli','qrAli','tipAli');
+}
+$('tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+
+/* ---------------- 账号密码登录 ---------------- */
+try{const saved=localStorage.getItem('qc_remember_account');if(saved){$('account').value=saved;$('password').focus();}}catch(e){}
+async function login(){
+  const acc=$('account').value.trim(),pwd=$('password').value.trim();
+  $('errPwd').textContent='';
+  if(!acc||!pwd){$('errPwd').textContent='请输入账号和密码';return;}
+  $('btnLogin').disabled=true;$('btnLogin').textContent='登录中…';
+  try{
+    const r=await fetch('/api/auth/password-login',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({account:acc,password:pwd})});
+    const j=await r.json();
+    if(!r.ok||!j.ok){$('errPwd').textContent=j.detail||'登录失败，请重试';return;}
+    if($('remember').checked)localStorage.setItem('qc_remember_account',acc);
+    else localStorage.removeItem('qc_remember_account');
+    await saveSession(j.token,j.user);
+  }catch(e){$('errPwd').textContent='网络异常，请确认后端服务已启动';}
+  finally{$('btnLogin').disabled=false;$('btnLogin').textContent='登 录';}
+}
+$('btnLogin').onclick=login;
+$('password').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+$('account').addEventListener('keydown',e=>{if(e.key==='Enter')$('password').focus();});
+$('forgot').onclick=()=>toast('演示环境：任意密码即可登录；正式环境请联系管理员重置');
+
+/* ---------------- 手机验证码登录 ---------------- */
+const phoneRe=/^1[3-9]\d{9}$/;
+let cd=0,cdTimer=null;
+$('phone').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'');});
+$('getCode').onclick=async()=>{
+  if(cd>0)return;
+  const phone=$('phone').value.trim();
+  if(!phoneRe.test(phone)){toast('请输入正确的 11 位手机号');return;}
+  try{
+    const r=await fetch('/api/auth/send-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.detail||'发送失败');
+    if(d.demo_code){
+      $('code').value=d.demo_code;
+      const h=$('codeHint');h.style.display='block';
+      h.innerHTML='演示验证码：<b>'+d.demo_code+'</b>（已自动填入，可直接点登录）';
+      toast('演示验证码：'+d.demo_code+'（已自动填入）');
+    }else{
+      toast('验证码已发送，请查收短信');
+    }
+    cd=60;$('getCode').disabled=true;$('getCode').textContent=cd+'s 后重发';
+    cdTimer=setInterval(()=>{cd--;
+      if(cd<=0){clearInterval(cdTimer);$('getCode').disabled=false;$('getCode').textContent='获取验证码';}
+      else $('getCode').textContent=cd+'s 后重发';},1000);
+  }catch(e){toast(e.message);}
+};
+$('phoneLogin').onclick=async()=>{
+  $('errPhone').textContent='';
+  const phone=$('phone').value.trim(),code=$('code').value.trim();
+  if(!phoneRe.test(phone)){$('errPhone').textContent='请输入正确的 11 位手机号';return;}
+  if(!/^\d{4,6}$/.test(code)){$('errPhone').textContent='请输入收到的验证码';return;}
+  $('phoneLogin').disabled=true;
+  try{
+    const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone,code})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.detail||'登录失败');
+    toast('登录成功，正在进入…');
+    await saveSession(d.token,d.user);
+  }catch(e){$('errPhone').textContent=e.message;}
+  finally{$('phoneLogin').disabled=false;}
+};
+
+/* ---------------- 仿真二维码绘制（纯前端，无外部库） ---------------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function drawQR(cv,text){
+  const N=25,cell=cv.width/N,ctx=cv.getContext('2d');
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);
+  let seed=0;for(let i=0;i<text.length;i++)seed=(seed*31+text.charCodeAt(i))>>>0;
+  const rnd=mulberry32(seed||1);
+  ctx.fillStyle='#1c2b45';
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    if(isFinder(x,y,N))continue;
+    if(rnd()>0.5)ctx.fillRect(x*cell,y*cell,cell+0.6,cell+0.6);
+  }
+  drawFinder(ctx,0,0,cell);drawFinder(ctx,(N-7)*cell,0,cell);drawFinder(ctx,0,(N-7)*cell,cell);
+  ctx.fillStyle='#2563eb';ctx.beginPath();ctx.arc(cv.width/2,cv.height/2,cell*2.4,0,7);ctx.fill();
+  ctx.fillStyle='#fff';ctx.font='bold '+(cell*2.6)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('✓',cv.width/2,cv.height/2+1);
+}
+function isFinder(x,y,N){const f=(a,b)=>x>=a&&x<a+7&&y>=b&&y<b+7;return f(0,0)||f(N-7,0)||f(0,N-7);}
+function drawFinder(ctx,ox,oy,cell){
+  ctx.fillStyle='#1c2b45';ctx.fillRect(ox,oy,7*cell,7*cell);
+  ctx.fillStyle='#fff';ctx.fillRect(ox+cell,oy+cell,5*cell,5*cell);
+  ctx.fillStyle='#1c2b45';ctx.fillRect(ox+2*cell,oy+2*cell,3*cell,3*cell);
+}
+
+/* ---------------- 扫码登录：ticket + 轮询（demo 仿真码 / oauth 真实授权链接） ---------------- */
+async function startScan(provider,cvId,boxId,tipId){
+  const box=$(boxId);box.classList.remove('done');
+  box.innerHTML='<canvas id="'+cvId+'"></canvas><div class="scan"></div>';
+  const c=$(cvId);c.width=176;c.height=176;
+  const simBtn=$(provider==='wx'?'simWx':'simAli');
+  const tip=$(tipId);
+  tip.textContent='⏳ 正在获取二维码…';
+  try{
+    const r=await fetch('/api/auth/'+provider+'/qrcode');const d=await r.json();
+    if(!r.ok)throw new Error(d.detail||'获取二维码失败');
+    tip.innerHTML='请使用 <b>'+(provider==='wx'?'微信':'支付宝')+'</b> 扫一扫登录';
+    currentTicket=d.ticket;
+    if(d.mode==='oauth'){
+      simBtn.style.display='none';
+      tip.innerHTML='已启用真实登录：请点击下方按钮，在手机 '+(provider==='wx'?'微信':'支付宝')+' 中完成授权';
+      box.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px">'+
+        '<div style="font-size:30px">'+(provider==='wx'?'💬':'💙')+'</div>'+
+        '<a class="codebtn" style="border:1px solid #e3eaf5;border-radius:9px;padding:8px 14px" href="'+d.url+'" target="_blank" rel="noopener">在手机中打开授权页</a></div>';
+    }else{
+      simBtn.style.display='';
+      drawQR(c,d.url);
+    }
+    if(pollTimer)clearInterval(pollTimer);
+    pollTimer=setInterval(async()=>{
+      try{
+        const s=await fetch('/api/auth/'+provider+'/status?ticket='+currentTicket);
+        const sd=await s.json();
+        if(sd.status==='confirmed'){
+          clearInterval(pollTimer);pollTimer=null;
+          box.classList.add('done');
+          box.innerHTML='<div class="ok">✅</div>';
+          toast('登录成功，正在进入…');
+          saveSession(sd.token,sd.user);
+        }
+      }catch(e){}
+    },1500);
+  }catch(e){toast(e.message);}
+}
+function refreshScan(provider,cvId,boxId,tipId){$(boxId).classList.remove('done');startScan(provider,cvId,boxId,tipId);}
+async function simConfirm(provider){
+  if(!currentTicket){toast('请先刷新二维码');return;}
+  try{
+    await fetch('/api/auth/'+provider+'/confirm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ticket:currentTicket})});
+    toast('已模拟扫码，等待确认…');
+  }catch(e){toast('模拟失败');}
+}
+$('refreshWx').onclick=()=>refreshScan('wx','cvWx','qrWx','tipWx');
+$('refreshAli').onclick=()=>refreshScan('ali','cvAli','qrAli','tipAli');
+$('simWx').onclick=()=>simConfirm('wx');
+$('simAli').onclick=()=>simConfirm('ali');
+['cvWx','cvAli'].forEach(id=>{const c=$(id);c.width=176;c.height=176;});
+
+/* ---------------- 游客体验 ---------------- */
+$('guest').onclick=async()=>{
+  try{
+    const r=await fetch('/api/auth/guest',{method:'POST'});const j=await r.json();
+    if(j.ok){
+      localStorage.setItem(GUEST_KEY,j.token);
+      toast('游客身份已就绪，正在进入…');
+      await saveSession(j.token,j.user);
+    }
+  }catch(e){toast('网络异常，请稍后再试');}
+};
+/* 已登录直接进工作台 */
+try{if(localStorage.getItem(TOKEN_KEY)){location.href='index.html';}}catch(e){}
+</script>
+</body>
+</html>

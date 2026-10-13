@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>问题自检平台 · 企业问题自检中心</title>
+<style>
+:root{
+  --primary:#2f6bff; --primary-dk:#1f4fd8; --navy:#1c2b45; --navy2:#16223a;
+  --bg:#f2f6fd; --card:#ffffff; --line:#e6edf9;
+  --txt:#1c2b45; --sub:#5b6b85; --muted:#8a97ad;
+  --green:#22c55e; --yellow:#f5b50a; --red:#ef4444; --cyan:#0ea5e9;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+html,body{height:100%}
+body{background:var(--bg);color:var(--txt);display:flex;overflow:hidden}
+button{font-family:inherit}
+/* ============ 侧边栏 ============ */
+#sidebar{width:220px;flex:none;background:linear-gradient(180deg,var(--navy),var(--navy2));color:#c9d6ee;
+  display:flex;flex-direction:column;transition:margin-left .25s;z-index:30}
+#sidebar.hide{margin-left:-220px}
+.logo{display:flex;align-items:center;gap:10px;padding:20px 18px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+.logo .mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#3f8bff,#2563eb);
+  display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 4px 12px rgba(47,107,255,.45)}
+.logo .mark svg{width:19px;height:19px}
+.logo b{color:#fff;font-size:15px;letter-spacing:.5px}
+nav{flex:1;padding:12px 10px;overflow-y:auto}
+.nav-sec{font-size:11px;color:#5d6f92;padding:14px 10px 6px;letter-spacing:1px}
+.nav-item{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:10px;cursor:pointer;
+  font-size:14px;margin-bottom:3px;transition:background .15s;position:relative;user-select:none}
+.nav-item:hover{background:rgba(255,255,255,.07)}
+.nav-item.active{background:linear-gradient(135deg,#2f6bff,#2257e6);color:#fff;font-weight:600;
+  box-shadow:0 6px 16px rgba(47,107,255,.4)}
+.nav-item svg{width:17px;height:17px;flex:none}
+.nav-item .chev{margin-left:auto;width:12px;height:12px;transition:transform .2s;opacity:.7}
+.nav-item.open .chev{transform:rotate(180deg)}
+.sub-items{max-height:0;overflow:hidden;transition:max-height .25s ease}
+.sub-items.show{max-height:200px}
+.sub-item{padding:8px 12px 8px 40px;font-size:13px;color:#9db0d0;border-radius:8px;cursor:pointer;margin-bottom:2px}
+.sub-item:hover{color:#fff;background:rgba(255,255,255,.06)}
+.side-foot{padding:14px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:#5d6f92}
+/* ============ 主区 ============ */
+#main{flex:1;display:flex;flex-direction:column;min-width:0}
+#topbar{height:58px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;
+  gap:16px;padding:0 22px;flex:none}
+#btnMenu{background:none;border:none;font-size:19px;color:var(--sub);cursor:pointer;padding:6px 8px;border-radius:8px}
+#btnMenu:hover{background:var(--bg)}
+.search-wrap{margin-left:auto;position:relative}
+.search-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--muted)}
+#globalSearch{width:230px;height:36px;border:1px solid var(--line);border-radius:18px;background:#f7faff;
+  padding:0 14px 0 33px;font-size:13px;outline:none;color:var(--txt);transition:width .2s,border-color .2s}
+#globalSearch:focus{border-color:var(--primary);width:270px;background:#fff}
+.avatar-wrap{position:relative}
+#avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#3f8bff,#2563eb);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;cursor:pointer;user-select:none}
+.avatar-menu{position:absolute;right:0;top:46px;width:180px;background:#fff;border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 12px 32px rgba(28,43,69,.14);padding:8px;display:none}
+.avatar-menu.show{display:block}
+.avatar-menu .mi{padding:9px 12px;border-radius:8px;font-size:13px;cursor:pointer;color:var(--txt)}
+.avatar-menu .mi:hover{background:var(--bg)}
+.avatar-menu .mi.danger{color:var(--red)}
+.avatar-menu .uname{padding:9px 12px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line);margin-bottom:6px}
+#content{flex:1;overflow-y:auto;padding:24px 26px 40px}
+.page{display:none;max-width:1180px;margin:0 auto}
+.page.active{display:block}
+/* ============ 通用组件 ============ */
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+.page-head h1{font-size:22px;font-weight:800}
+.page-head .sub{margin-top:6px;font-size:13px;color:var(--sub)}
+.btn{border:none;border-radius:9px;cursor:pointer;font-size:13.5px;font-weight:600;padding:10px 20px;transition:all .15s}
+.btn-primary{background:linear-gradient(135deg,#3f8bff,#2563eb);color:#fff;box-shadow:0 6px 16px rgba(37,99,235,.32)}
+.btn-primary:hover{transform:translateY(-1px)}
+.btn-ghost{background:#fff;color:var(--txt);border:1px solid var(--line)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+.btn-danger{background:#fff1f0;color:var(--red);border:1px solid #ffd9d7}
+.btn-sm{padding:5px 12px;font-size:12px;border-radius:7px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600}
+.b-blue{background:#e8f0ff;color:#2563eb}.b-gray{background:#eef1f6;color:#64748b}
+.b-green{background:#e7f8ef;color:#16a34a}.b-yellow{background:#fdf4dc;color:#b45309}
+.b-red{background:#fdeaea;color:#dc2626}
+select,input[type=text],input[type=date],textarea{border:1px solid var(--line);border-radius:8px;padding:8px 12px;
+  font-size:13px;color:var(--txt);outline:none;background:#fff}
+select:focus,input:focus,textarea:focus{border-color:var(--primary)}
+select.row-status{padding:4px 8px;font-size:12.5px;border-radius:6px;cursor:pointer}
+/* ============ 仪表盘 ============ */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px}
+.stat-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;
+  align-items:center;justify-content:space-between}
+.stat-card .lab{font-size:13px;color:var(--sub);margin-bottom:8px}
+.stat-card .num{font-size:34px;font-weight:800;letter-spacing:-.5px}
+.dash-grid{display:grid;grid-template-columns:1.9fr 1fr;gap:16px;margin-bottom:18px}
+table{width:100%;border-collapse:collapse}
+th{font-size:12.5px;color:var(--muted);font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{font-size:13.5px;padding:12px;border-bottom:1px solid #eef3fb;color:var(--txt)}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#f8faff}
+.link{color:var(--primary);cursor:pointer;font-size:13px;text-decoration:none}
+.link:hover{text-decoration:underline}
+.cat-row{display:flex;align-items:center;justify-content:space-between;padding:10px 4px;cursor:pointer;border-radius:8px}
+.cat-row:hover{background:#f7faff}
+.cat-row .name{display:flex;align-items:center;gap:9px;font-size:13.5px}
+.cat-row .dot{width:9px;height:9px;border-radius:50%}
+.cat-row .cnt{font-size:14px;font-weight:700}
+.donut-wrap{display:flex;flex-direction:column;align-items:center;gap:4px}
+.donut-center{font-size:26px;font-weight:800;margin-top:-58px;pointer-events:none;text-align:center}
+.donut-center small{display:block;font-size:11px;color:var(--muted);font-weight:400}
+.quick-form .q-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:12px}
+.radio-pill{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:9px;padding:8px 14px;
+  font-size:13px;cursor:pointer;background:#fff}
+.radio-pill input{accent-color:var(--primary)}
+.radio-pill.on{border-color:var(--primary);background:#f0f6ff;color:var(--primary-dk);font-weight:600}
+/* ============ 列表页 ============ */
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.empty{padding:40px;text-align:center;color:var(--muted);font-size:13.5px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.bar-row .bl{width:64px;font-size:13px;color:var(--sub);flex:none}
+.bar-track{flex:1;height:10px;border-radius:5px;background:#eef3fb;overflow:hidden}
+.bar-fill{height:100%;border-radius:5px}
+.bar-row .bv{width:34px;text-align:right;font-size:13px;font-weight:700}
+/* ============ 弹窗 ============ */
+.modal-mask{position:fixed;inset:0;background:rgba(15,25,45,.45);display:none;align-items:center;justify-content:center;z-index:60}
+.modal-mask.show{display:flex}
+.modal{width:440px;max-width:92vw;background:#fff;border-radius:16px;padding:24px;max-height:88vh;overflow-y:auto}
+.modal h3{font-size:16px;margin-bottom:18px}
+.modal .fld{margin-bottom:14px}
+.modal .fld label{display:block;font-size:12.5px;color:var(--sub);margin-bottom:6px}
+.modal .fld input,.modal .fld select,.modal .fld textarea{width:100%}
+.modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+/* ============ AI 小暹 ============ */
+#catBtn{position:fixed;right:22px;bottom:22px;width:54px;height:54px;border-radius:50%;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#3f8bff,#2563eb);color:#fff;font-size:24px;box-shadow:0 10px 26px rgba(37,99,235,.4);z-index:50}
+#catBox{position:fixed;right:22px;bottom:86px;width:330px;max-width:92vw;height:430px;background:#fff;border:1px solid var(--line);
+  border-radius:16px;box-shadow:0 20px 50px rgba(28,43,69,.2);display:none;flex-direction:column;z-index:50;overflow:hidden}
+#catBox.show{display:flex}
+.cat-head{background:linear-gradient(135deg,#2f6bff,#2257e6);color:#fff;padding:12px 16px;font-size:14px;font-weight:600}
+.cat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#f8faff}
+.msg{max-width:82%;padding:9px 12px;border-radius:12px;font-size:13px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.msg.user{align-self:flex-end;background:var(--primary);color:#fff;border-bottom-right-radius:4px}
+.msg.bot{align-self:flex-start;background:#fff;border:1px solid var(--line);border-bottom-left-radius:4px}
+.cat-input{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
+.cat-input input{flex:1;border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:13px;outline:none}
+.cat-input button{border:none;background:var(--primary);color:#fff;border-radius:8px;padding:0 16px;font-size:13px;cursor:pointer}
+.cat-chips{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;border-top:1px solid var(--line)}
+.cat-chips button{border:1px solid var(--line);background:#f7faff;color:var(--sub);border-radius:999px;
+  padding:5px 11px;font-size:12px;cursor:pointer;font-family:inherit;transition:.15s}
+.cat-chips button:hover{border-color:var(--primary);color:var(--primary)}
+@media (max-width:1100px){.stat-grid{grid-template-columns:repeat(2,1fr)}.dash-grid{grid-template-columns:1fr}.grid-2{grid-template-columns:1fr}}
+@media (max-width:820px){
+  #sidebar{position:fixed;left:0;top:0;bottom:0}.sidebar-mask{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:25;display:none}
+  .grid-4{grid-template-columns:repeat(2,1fr)}
+}
+@media print{#sidebar,#topbar,#catBtn,#catBox,.page-head .btn{display:none!important}body{overflow:visible}#content{overflow:visible}.page{display:none!important}.page.active{display:block!important}}
+</style>
+</head>
+<body>
+
+<!-- ================= 侧边栏 ================= -->
+<aside id="sidebar">
+  <div class="logo">
+    <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5l8-3z" fill="#fff" opacity=".9"/><path d="M8.5 12l2.4 2.4 4.6-5" stroke="#2563eb" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg></span>
+    <b>问题自检平台</b>
+  </div>
+  <nav>
+    <div class="nav-sec">工作台</div>
+    <div class="nav-item active" data-page="dashboard">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M3 11l9-8 9 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M5 10v10h5v-6h4v6h5V10" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      首页仪表盘
+    </div>
+    <div class="nav-item" data-page="tasks">
+      <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      自检任务
+      <svg class="chev" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+    </div>
+    <div class="sub-items" data-for="tasks">
+      <div class="sub-item" data-page="tasks">全部任务</div>
+      <div class="sub-item" data-act="new-task">+ 新建自检任务</div>
+    </div>
+    <div class="nav-item" data-page="problems">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 5-9 5-9-5 9-5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M3 13l9 5 9-5" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      问题库
+      <svg class="chev" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+    </div>
+    <div class="sub-items" data-for="problems">
+      <div class="sub-item" data-page="problems">全部问题</div>
+      <div class="sub-item" data-act="new-problem">+ 新增问题</div>
+      <div class="sub-item" data-page="problems" data-filter="高">高风险问题</div>
+    </div>
+    <div class="nav-item" data-page="reports">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      风险报告
+    </div>
+    <div class="nav-sec">智能工具</div>
+    <div class="nav-item" data-act="quiz">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M6 3h9l4 4v14H6V3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 9h6M9 13h6M9 17h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      文档抽题自检
+    </div>
+    <div class="nav-item" data-page="settings" style="margin-top:14px">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M4.9 4.9l2.1 2.1m10 10l2.1 2.1m0-14.2l-2.1 2.1m-10 10l-2.1 2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      系统设置
+    </div>
+  </nav>
+  <div class="side-foot">企业问题自检 · v3.0</div>
+</aside>
+<div class="sidebar-mask" id="sideMask"></div>
+
+<!-- ================= 主区 ================= -->
+<div id="main">
+  <header id="topbar">
+    <button id="btnMenu">☰</button>
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input id="globalSearch" placeholder="搜索自检项">
+    </div>
+    <div class="avatar-wrap">
+      <div id="avatar">A</div>
+      <div class="avatar-menu" id="avatarMenu">
+        <div class="uname" id="menuUser">未登录</div>
+        <div class="mi" data-act="quiz">📝 文档抽题自检</div>
+        <div class="mi" data-page="settings">⚙ 系统设置</div>
+        <div class="mi danger" id="btnLogout">退出登录</div>
+      </div>
+    </div>
+  </header>
+
+  <main id="content">
+    <!-- ============ 首页仪表盘（图2复刻） ============ -->
+    <section class="page active" id="page-dashboard">
+      <div class="page-head">
+        <div>
+          <h1>问题自检中心</h1>
+          <div class="sub">快速识别风险项，跟踪整改进度</div>
+        </div>
+        <button class="btn btn-primary" data-act="new-task">开始自检</button>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div><div class="lab">自检完成率</div><div class="num" id="stRate">0%</div></div>
+          <svg width="72" height="72" viewBox="0 0 72 72">
+            <circle cx="36" cy="36" r="30" fill="none" stroke="#eef3fb" stroke-width="8"/>
+            <circle id="ringRate" cx="36" cy="36" r="30" fill="none" stroke="#2f6bff" stroke-width="8"
+              stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="188.5" transform="rotate(-90 36 36)"/>
+            <rect x="27" y="26" width="18" height="20" rx="3" fill="none" stroke="#2f6bff" stroke-width="2"/>
+            <path d="M31 32h10M31 37h10M31 42h6" stroke="#2f6bff" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="stat-card">
+          <div><div class="lab">待检问题</div><div class="num" id="stPending">0</div></div>
+          <svg width="72" height="72" viewBox="0 0 72 72">
+            <circle cx="36" cy="36" r="30" fill="none" stroke="#eef3fb" stroke-width="8"/>
+            <circle id="ringPending" cx="36" cy="36" r="30" fill="none" stroke="#22c55e" stroke-width="8"
+              stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="60" transform="rotate(-90 36 36)"/>
+            <rect x="28" y="25" width="16" height="22" rx="3" fill="none" stroke="#22c55e" stroke-width="2"/>
+            <path d="M32 31h8M32 36h8M32 41h5" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="stat-card">
+          <div><div class="lab">高风险项</div><div class="num" id="stHigh">0</div></div>
+          <svg width="72" height="60" viewBox="0 0 72 60">
+            <rect x="8"  y="30" width="8" height="22" rx="3" fill="#2f6bff"/>
+            <rect x="21" y="18" width="8" height="34" rx="3" fill="#60a5fa"/>
+            <rect x="34" y="36" width="8" height="16" rx="3" fill="#f5b50a"/>
+            <rect x="47" y="8"  width="8" height="44" rx="3" fill="#ef4444"/>
+            <circle cx="60" cy="14" r="9" fill="#2f6bff"/>
+            <path d="M56.5 14l2.4 2.4 4.4-4.8" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="stat-card">
+          <div><div class="lab">已完成任务</div><div class="num" id="stDone">0</div></div>
+          <svg width="72" height="72" viewBox="0 0 72 72">
+            <circle cx="36" cy="36" r="30" fill="none" stroke="#eef3fb" stroke-width="8"/>
+            <circle id="ringDone" cx="36" cy="36" r="30" fill="none" stroke="#f5b50a" stroke-width="8"
+              stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="50" transform="rotate(-90 36 36)"/>
+            <path d="M27 36l6 6 12-13" stroke="#f5b50a" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <b style="font-size:15px">今日自检任务</b>
+            <a class="link" data-page="tasks">全部任务 →</a>
+          </div>
+          <table>
+            <thead><tr><th>任务名称</th><th>类型</th><th>状态</th><th>截止时间</th><th>操作</th></tr></thead>
+            <tbody id="tbToday"></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <b style="font-size:15px">高频问题分类</b>
+            <span style="color:var(--muted);cursor:pointer">⌄</span>
+          </div>
+          <div class="donut-wrap">
+            <svg width="150" height="150" viewBox="0 0 150 150" id="donut"></svg>
+            <div class="donut-center"><span id="donutNum">0</span><small>该类问题数</small></div>
+          </div>
+          <div id="catList" style="margin-top:26px"></div>
+        </div>
+      </div>
+
+      <div class="card quick-form">
+        <b style="font-size:15px">快速自检</b>
+        <div class="q-row">
+          <span style="font-size:13.5px;display:flex;align-items:center;gap:6px">
+            <span style="width:17px;height:17px;border-radius:50%;background:var(--primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px">?</span>
+            你是否已确认本次检查范围?
+          </span>
+          <label class="radio-pill on"><input type="radio" name="scope" value="已确认范围" checked>已确认范围</label>
+          <label class="radio-pill"><input type="radio" name="scope" value="部分确认">部分确认</label>
+          <label class="radio-pill"><input type="radio" name="scope" value="未确认">未确认</label>
+          <select id="qCat">
+            <option value="合规类">合规类</option><option value="流程类">流程类</option>
+            <option value="技术类">技术类</option><option value="数据类">数据类</option>
+            <option value="权限类">权限类</option>
+          </select>
+          <label class="radio-pill"><input id="qRisk" type="checkbox" checked>启用风险等级提示</label>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px">
+          <span style="font-size:13px;color:var(--muted)">选择问题类别，一键生成本次自检任务</span>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-ghost" id="btnQuickSubmit">提交检查</button>
+            <button class="btn btn-primary" id="btnQuickDraft">保存草稿</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 自检任务 ============ -->
+    <section class="page" id="page-tasks">
+      <div class="page-head">
+        <div><h1>自检任务</h1><div class="sub">任务全生命周期管理：待开始 → 进行中 → 已完成</div></div>
+        <button class="btn btn-primary" data-act="new-task">+ 新建任务</button>
+      </div>
+      <div class="toolbar">
+        <select id="fTaskStatus"><option value="">全部状态</option><option>待开始</option><option>进行中</option><option>已完成</option></select>
+        <select id="fTaskType"><option value="">全部类型</option><option>合规类</option><option>流程类</option><option>技术类</option><option>数据类</option><option>权限类</option></select>
+        <span style="font-size:12.5px;color:var(--muted)" id="taskCount"></span>
+      </div>
+      <div class="card" style="padding:8px 16px">
+        <table>
+          <thead><tr><th>任务名称</th><th>类型</th><th>状态</th><th>截止时间</th><th>创建人</th><th>操作</th></tr></thead>
+          <tbody id="tbTasks"></tbody>
+        </table>
+        <div class="empty" id="taskEmpty" style="display:none">暂无任务，点右上角「新建任务」开始</div>
+      </div>
+    </section>
+
+    <!-- ============ 问题库 ============ -->
+    <section class="page" id="page-problems">
+      <div class="page-head">
+        <div><h1>问题库</h1><div class="sub">问题分类诊断与整改闭环：待整改 → 整改中 → 已闭环</div></div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost" data-act="seed-problems">导入示例数据</button>
+          <button class="btn btn-primary" data-act="new-problem">+ 新增问题</button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <select id="fCat"><option value="">全部类别</option><option>合规类</option><option>流程类</option><option>技术类</option><option>数据类</option><option>权限类</option></select>
+        <select id="fLevel"><option value="">全部等级</option><option>高</option><option>中</option><option>低</option></select>
+        <select id="fPStatus"><option value="">全部状态</option><option>待整改</option><option>整改中</option><option>已闭环</option></select>
+        <span style="font-size:12.5px;color:var(--muted)" id="probCount"></span>
+      </div>
+      <div class="card" style="padding:8px 16px">
+        <table>
+          <thead><tr><th>问题描述</th><th>类别</th><th>风险等级</th><th>整改状态</th><th>发现日期</th><th>操作</th></tr></thead>
+          <tbody id="tbProblems"></tbody>
+        </table>
+        <div class="empty" id="probEmpty" style="display:none">暂无问题记录</div>
+      </div>
+    </section>
+
+    <!-- ============ 风险报告 ============ -->
+    <section class="page" id="page-reports">
+      <div class="page-head">
+        <div><h1>风险报告</h1><div class="sub">整改有依据：自动汇总风险分布与闭环进度</div></div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost" id="btnPrint">🖨 打印报告</button>
+          <button class="btn btn-primary" id="btnExportMd">导出 Markdown</button>
+        </div>
+      </div>
+      <div class="grid-4" style="margin-bottom:16px">
+        <div class="card"><div class="stat-card" style="border:none;padding:0"><div><div class="lab">问题总数</div><div class="num" id="rpTotal">0</div></div></div></div>
+        <div class="card"><div class="stat-card" style="border:none;padding:0"><div><div class="lab">高风险未闭环</div><div class="num" id="rpHigh" style="color:var(--red)">0</div></div></div></div>
+        <div class="card"><div class="stat-card" style="border:none;padding:0"><div><div class="lab">整改闭环率</div><div class="num" id="rpClose">0%</div></div></div></div>
+        <div class="card"><div class="stat-card" style="border:none;padding:0"><div><div class="lab">进行中任务</div><div class="num" id="rpTasks">0</div></div></div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <b style="font-size:15px">各类别问题分布</b>
+          <div id="rpBars" style="margin-top:16px"></div>
+        </div>
+        <div class="card">
+          <b style="font-size:15px">高风险问题清单（未闭环）</b>
+          <table style="margin-top:8px">
+            <thead><tr><th>问题描述</th><th>类别</th><th>状态</th></tr></thead>
+            <tbody id="tbHighRisk"></tbody>
+          </table>
+          <div class="empty" id="rpHighEmpty" style="display:none">高风险问题已全部闭环 🎉</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 系统设置 ============ -->
+    <section class="page" id="page-settings">
+      <div class="page-head">
+        <div><h1>系统设置</h1><div class="sub">站点信息与数据管理</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <b style="font-size:15px">站点信息</b>
+          <table style="margin-top:10px">
+            <tr><td style="color:var(--muted);width:110px">平台名称</td><td>问题自检平台</td></tr>
+            <tr><td style="color:var(--muted)">当前用户</td><td id="setUser">-</td></tr>
+            <tr><td style="color:var(--muted)">访问门槛</td><td>已关闭（自部署服务器模式）</td></tr>
+            <tr><td style="color:var(--muted)">版本</td><td>v3.0 企业版</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <b style="font-size:15px">数据管理</b>
+          <div style="display:flex;flex-direction:column;gap:12px;margin-top:14px">
+            <button class="btn btn-ghost" id="btnExportJson" style="text-align:left">⬇ 导出全部数据（JSON 备份）</button>
+            <button class="btn btn-ghost" id="btnReseed" style="text-align:left">♻ 重置为演示数据</button>
+            <button class="btn btn-danger" id="btnWipe" style="text-align:left;border:1px solid #ffd9d7">🗑 清空全部任务与问题</button>
+          </div>
+          <div style="margin-top:14px;font-size:12px;color:var(--muted);line-height:1.7">
+            数据存储在浏览器本地（localStorage），仅当前浏览器可见；正式部署可接入后端持久化。
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ============ 新建任务弹窗 ============ -->
+<div class="modal-mask" id="maskTask">
+  <div class="modal">
+    <h3>新建自检任务</h3>
+    <div class="fld"><label>任务名称</label><input type="text" id="tkName" placeholder="如：合同条款自检"></div>
+    <div class="fld"><label>问题类别</label>
+      <select id="tkType"><option>合规类</option><option>流程类</option><option>技术类</option><option>数据类</option><option>权限类</option></select>
+    </div>
+    <div class="fld"><label>截止时间</label><input type="date" id="tkDue"></div>
+    <div class="fld"><label>检查范围说明（可选）</label><textarea id="tkNote" rows="2" placeholder="本次检查覆盖哪些部门 / 流程"></textarea></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close>取消</button>
+      <button class="btn btn-primary" id="btnSaveTask">创建任务</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 新增问题弹窗 ============ -->
+<div class="modal-mask" id="maskProblem">
+  <div class="modal">
+    <h3>新增问题</h3>
+    <div class="fld"><label>问题描述</label><textarea id="pbTitle" rows="2" placeholder="发现的问题是什么？"></textarea></div>
+    <div class="fld"><label>类别</label>
+      <select id="pbCat"><option>合规类</option><option>流程类</option><option>技术类</option><option>数据类</option><option>权限类</option></select>
+    </div>
+    <div class="fld"><label>风险等级</label>
+      <select id="pbLevel"><option>高</option><option selected>中</option><option>低</option></select>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close>取消</button>
+      <button class="btn btn-primary" id="btnSaveProblem">保存问题</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ AI 小暹 ============ -->
+<button id="catBtn" title="AI 助手小暹">🐱</button>
+<div id="catBox">
+  <div class="cat-head">小暹 · 问题自检平台助手（喵~）</div>
+  <div class="cat-msgs" id="catMsgs">
+    <div class="msg bot">喵~ 我是小暹，本平台的专属助手。怎么建任务、问题库怎么用、报告怎么导出，都可以问我；闲聊也接，别的项目我可不管喵。</div>
+  </div>
+  <div class="cat-chips">
+    <button data-q="怎么新建自检任务？">怎么新建任务？</button>
+    <button data-q="问题库怎么用？">问题库怎么用？</button>
+    <button data-q="风险报告怎么导出？">报告怎么导出？</button>
+    <button data-q="我的数据存在哪里？">数据存在哪？</button>
+  </div>
+  <div class="cat-input">
+    <input id="catText" placeholder="输入问题，回车发送">
+    <button id="catSend">发送</button>
+  </div>
+</div>
+
+<script>
+/* ==================================================================
+   企业问题自检平台 · 前端工作台
+   数据：localStorage（qc_tasks / qc_problems），首次进入自动生成演示数据
+   老版「文档抽题自检」完整保留在 quiz.html，由侧边栏「智能工具」进入
+================================================================== */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+function toast(t){const e=document.createElement('div');e.textContent=t;
+  e.style.cssText='position:fixed;left:50%;top:24px;transform:translateX(-50%);background:#1c2b45;color:#fff;font-size:13px;padding:10px 20px;border-radius:8px;z-index:99;opacity:.95';
+  document.body.appendChild(e);setTimeout(()=>e.remove(),2000);}
+
+/* ---------------- 登录守卫 ---------------- */
+let ME=null;
+try{
+  const t=localStorage.getItem('qc_token');
+  if(!t){location.href='login.html';throw 0;}
+  ME=JSON.parse(localStorage.getItem('qc_user')||'{}');
+}catch(e){}
+if(ME){
+  $('avatar').textContent=(ME.name||ME.identifier||'A').slice(0,1).toUpperCase();
+  $('menuUser').textContent='当前账号：'+(ME.name||ME.identifier||'');
+  $('setUser').textContent=ME.name||ME.identifier||'-';
+}
+
+/* ---------------- 数据层 ---------------- */
+const TASK_KEY='qc_tasks', PROB_KEY='qc_problems', SEED_KEY='qc_seeded_v3';
+const CATS=['合规类','流程类','技术类','数据类','权限类'];
+const CAT_COLORS={'合规类':'#2f6bff','流程类':'#0ea5e9','技术类':'#22c55e','数据类':'#f5b50a','权限类':'#a78bfa'};
+function load(k,d){try{const v=JSON.parse(localStorage.getItem(k));return Array.isArray(v)?v:d;}catch(e){return d;}}
+function save(k,v){localStorage.setItem(k,JSON.stringify(v));}
+let tasks=load(TASK_KEY,[]), problems=load(PROB_KEY,[]);
+
+function seed(){
+  if(localStorage.getItem(SEED_KEY))return;
+  const names=['合同条款自检','数据安全自查','岗位流程自检','供应商资质审查','消防安全巡查','财务合规抽查',
+    '采购流程审计','员工权限复核','客户数据保护自查','生产安全检查','环保排放核查','IT系统巡检','应急预案演练检查'];
+  const staff=['张伟','李娜','王强','赵敏','刘洋'];
+  /* 首屏四条与设计稿一致 */
+  tasks=[
+    {id:'t1',name:'合同条款自检',type:'合规类',status:'进行中',due:'2025-10-20',by:'张伟'},
+    {id:'t2',name:'数据安全自查',type:'技术类',status:'待开始',due:'2025-10-22',by:'李娜'},
+    {id:'t3',name:'岗位流程自检',type:'流程类',status:'待开始',due:'2025-10-22',by:'王强'},
+    {id:'t4',name:'岗位流程自检',type:'流程类',status:'已完成',due:'2025-10-18',by:'赵敏'},
+  ];
+  let n=45,done=35;/* 39 done / 50 total = 78% */
+  for(let i=0;i<n;i++){
+    const name=names[i%names.length]+(i>=names.length?'（'+Math.ceil((i+1)/names.length)+'期）':'');
+    const st=i<done-1?'已完成':(i<done-1+8?'进行中':'待开始');
+    const d=new Date(2025,9,2+i%26);
+    tasks.push({id:'ts'+i,name,type:CATS[i%CATS.length],status:st,
+      due:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),
+      by:staff[i%staff.length]});
+  }
+  /* 问题库：126 条（合规42/流程31/数据26/权限27），其中高风险 18 */
+  const tpl={
+    '合规类':['合同未使用评审模板','资质证书过期未更新','对外承诺超出授权范围','制度文件未按期修订','招投标文件存疑'],
+    '流程类':['审批节点缺失','跨部门交接无记录','关键环节无双岗复核','流程倒签','验收环节流于形式'],
+    '技术类':['系统漏洞未按期修复','备份策略未验证','日志留存不足','弱口令未整改','接口未做限流'],
+    '数据类':['敏感数据明文存储','数据导出未审批','越权访问未拦截','共享链接未设有效期','未脱敏数据外发'],
+    '权限类':['离职账号未及时回收','权限与岗位不匹配','管理员账号共用','长期未登录账号未冻结','临时权限未按期收回'],
+  };
+  const plan={'合规类':42,'流程类':31,'数据类':26,'权限类':27};
+  let pid=0,high=0;
+  CATS.forEach(cat=>{
+    const cnt=plan[cat]||0;
+    for(let i=0;i<cnt;i++){
+      const level=(high<18&&i%7===0)?'高':(i%3===0?'中':'低');
+      if(level==='高')high++;
+      const closed=i%4===0?1:(i%5===0?0:2);/* 0待整改 1已闭环 2整改中 */
+      problems.push({id:'p'+(pid++),title:tpl[cat][i%tpl[cat].length]+'（'+(Math.floor(i/tpl[cat].length)+1)+'）',
+        cat,level,status:closed===1?'已闭环':(closed===0?'待整改':'整改中'),
+        date:'2025-'+String(8+i%3).padStart(2,'0')+'-'+String(1+i%27).padStart(2,'0')});
+    }
+  });
+  save(TASK_KEY,tasks);save(PROB_KEY,problems);localStorage.setItem(SEED_KEY,'1');
+}
+seed();
+/* 导入示例数据：在现有问题库基础上追加一批示例问题（按标题去重） */
+function seedMore(){
+  const more=[
+    ['合规类','新增制度未组织培训宣贯'],['合规类','证照年检临期未建立提醒'],
+    ['流程类','紧急采购事后补批'],['流程类','岗位交接清单缺失'],
+    ['技术类','终端补丁更新不及时'],['技术类','无线网络未做访客隔离'],
+    ['数据类','报表含敏感字段未脱敏'],['数据类','备份数据未加密存储'],
+    ['权限类','外包人员权限过宽'],['权限类','共享盘权限未定期复核'],
+    ['流程类','值班记录事后补签'],['合规类','对外宣传用语未经法务审核'],
+    ['技术类','官网证书到期未续期'],['数据类','客户信息导出无审批记录'],
+    ['权限类','测试环境误用生产数据'],['流程类','合同归档超期'],
+  ];
+  let n=0,added=0;
+  more.forEach(pair=>{
+    const cat=pair[0],title=pair[1];
+    if(problems.some(p=>p.title===title))return;
+    problems.push({id:'s'+Date.now()+'_'+(n++),title,cat,
+      level:['高','中','低'][n%3],status:['待整改','整改中','已闭环'][n%3],date:today()});
+    added++;
+  });
+  save(PROB_KEY,problems);renderAll();goPage('problems');
+  toast(added?('已导入 '+added+' 条示例问题'):'示例问题已存在，未重复导入');
+}
+
+/* ---------------- 仪表盘 ---------------- */
+function ring(id,frac){const c=document.getElementById(id);if(!c)return;
+  const full=188.5;c.style.strokeDashoffset=String(full*(1-Math.max(0,Math.min(1,frac))));}
+function renderStats(){
+  const total=tasks.length,done=tasks.filter(t=>t.status==='已完成').length;
+  const rate=total?Math.round(done/total*100):0;
+  $('stRate').textContent=rate+'%';ring('ringRate',rate/100);
+  const pending=problems.filter(p=>p.status!=='已闭环').length;
+  $('stPending').textContent=pending;
+  const high=problems.filter(p=>p.level==='高'&&p.status!=='已闭环').length;
+  $('stHigh').textContent=high;
+  $('stDone').textContent=done;
+  ring('ringPending',Math.min(1,pending/160));
+  ring('ringDone',total?done/total:0);
+}
+function taskAction(t){
+  if(t.status==='已完成')return '<a class="link" data-act="view-report">查看报告</a>';
+  if(t.status==='进行中')return '<a class="link" data-act="continue-task">继续</a>';
+  return '<a class="link" data-act="start-task">开始</a>';
+}
+function renderToday(){
+  const kw=($('globalSearch').value||'').trim();
+  const rows=tasks.filter(t=>!kw||t.name.includes(kw)).slice(0,4);
+  $('tbToday').innerHTML=rows.map(t=>'<tr data-id="'+esc(t.id)+'">'+
+    '<td>'+esc(t.name)+'</td><td><span class="badge b-blue">'+esc(t.type)+'</span></td>'+
+    '<td>'+statusBadge(t.status)+'</td><td>'+esc(t.due)+'</td>'+
+    '<td style="white-space:nowrap">'+taskAction(t)+'</td></tr>').join('')||
+    '<tr><td colspan="5" class="empty">没有匹配的任务</td></tr>';
+}
+function statusBadge(s){const m={'进行中':'b-blue','待开始':'b-gray','已完成':'b-green','待整改':'b-red','整改中':'b-yellow','已闭环':'b-green'};
+  return '<span class="badge '+(m[s]||'b-gray')+'">'+esc(s)+'</span>';}
+function levelBadge(l){const m={'高':'b-red','中':'b-yellow','低':'b-gray'};return '<span class="badge '+(m[l]||'b-gray')+'">'+esc(l)+'风险</span>';}
+
+/* ---------------- 高频问题分类（环图 + 列表） ---------------- */
+let focusCat='流程类';
+function renderDonut(){
+  const counts={};CATS.forEach(c=>counts[c]=problems.filter(p=>p.cat===c).length);
+  const total=CATS.reduce((s,c)=>s+counts[c],0)||1;
+  const R=62,CX=75,CY=75,circ=2*Math.PI*R;let off=0,svg='';
+  CATS.forEach(c=>{
+    const frac=counts[c]/total,len=circ*frac;
+    svg+='<circle cx="'+CX+'" cy="'+CY+'" r="'+R+'" fill="none" stroke="'+CAT_COLORS[c]+'" stroke-width="17"'
+      +' stroke-dasharray="'+Math.max(0,len-3)+' '+circ+'" stroke-dashoffset="'+(-off)+'"'
+      +' transform="rotate(-90 '+CX+' '+CY+')" style="cursor:pointer" data-cat="'+c+'"'
+      +' opacity="'+(c===focusCat?1:.45)+'"/>';
+    off+=len;
+  });
+  svg+='<circle cx="'+CX+'" cy="'+CY+'" r="44" fill="#fff"/>';
+  $('donut').innerHTML=svg;
+  $('donutNum').textContent=counts[focusCat]||0;
+  $('catList').innerHTML=CATS.map(c=>'<div class="cat-row" data-cat="'+c+'">'+
+    '<span class="name"><span class="dot" style="background:'+CAT_COLORS[c]+'"></span>'+esc(c.replace('类','')+'问题')+'</span>'+
+    '<span class="cnt">'+counts[c]+'</span></div>').join('');
+}
+function renderAll(){renderStats();renderToday();renderDonut();renderTasks();renderProblems();renderReports();}
+
+/* ---------------- 自检任务页 ---------------- */
+function renderTasks(){
+  const fs=$('fTaskStatus').value,ft=$('fTaskType').value,kw=($('globalSearch').value||'').trim();
+  const rows=tasks.filter(t=>(!fs||t.status===fs)&&(!ft||t.type===ft)&&(!kw||t.name.includes(kw)));
+  $('taskCount').textContent='共 '+rows.length+' 个任务';
+  $('tbTasks').innerHTML=rows.slice(0,60).map(t=>'<tr data-id="'+esc(t.id)+'">'+
+    '<td>'+esc(t.name)+'</td><td><span class="badge b-blue">'+esc(t.type)+'</span></td>'+
+    '<td><select class="row-status" data-act="set-task-status" title="点击修改任务状态">'+
+      ['待开始','进行中','已完成'].map(s=>'<option'+(t.status===s?' selected':'')+'>'+s+'</option>').join('')+'</select></td>'+
+    '<td>'+esc(t.due)+'</td><td>'+esc(t.by||'-')+'</td>'+
+    '<td style="white-space:nowrap"><a class="link" data-act="refresh-task">刷新</a> &nbsp; '+taskAction(t)+' &nbsp; <a class="link" data-act="del-task" style="color:var(--red)">删除</a></td></tr>').join('')||
+    '<tr><td colspan="6" class="empty">没有匹配的任务</td></tr>';
+  $('taskEmpty').style.display=tasks.length?'none':'block';
+}
+
+/* ---------------- 问题库页 ---------------- */
+function renderProblems(){
+  const fc=$('fCat').value,fl=$('fLevel').value,fs=$('fPStatus').value,kw=($('globalSearch').value||'').trim();
+  const rows=problems.filter(p=>(!fc||p.cat===fc)&&(!fl||p.level===fl)&&(!fs||p.status===fs)&&(!kw||p.title.includes(kw)));
+  $('probCount').textContent='共 '+rows.length+' 条问题';
+  $('tbProblems').innerHTML=rows.slice(0,80).map(p=>'<tr data-id="'+esc(p.id)+'">'+
+    '<td>'+esc(p.title)+'</td><td><span class="badge b-blue">'+esc(p.cat)+'</span></td>'+
+    '<td>'+levelBadge(p.level)+'</td><td>'+statusBadge(p.status)+'</td><td>'+esc(p.date)+'</td>'+
+    '<td style="white-space:nowrap">'+nextStep(p)+' &nbsp; <a class="link" data-act="del-problem" style="color:var(--red)">删除</a></td></tr>').join('')||
+    '<tr><td colspan="6" class="empty">没有匹配的问题</td></tr>';
+  $('probEmpty').style.display=problems.length?'none':'block';
+}
+function nextStep(p){
+  if(p.status==='待整改')return '<a class="link" data-act="fix-start">开始整改</a>';
+  if(p.status==='整改中')return '<a class="link" data-act="fix-close">确认闭环</a>';
+  return '<span style="color:var(--muted);font-size:12.5px">已闭环 ✓</span>';
+}
+
+/* ---------------- 风险报告页 ---------------- */
+function renderReports(){
+  const total=problems.length,high=problems.filter(p=>p.level==='高'&&p.status!=='已闭环').length;
+  const closed=problems.filter(p=>p.status==='已闭环').length;
+  $('rpTotal').textContent=total;
+  $('rpHigh').textContent=high;
+  $('rpClose').textContent=(total?Math.round(closed/total*100):0)+'%';
+  $('rpTasks').textContent=tasks.filter(t=>t.status==='进行中').length;
+  const max=Math.max(1,...CATS.map(c=>problems.filter(p=>p.cat===c).length));
+  $('rpBars').innerHTML=CATS.map(c=>{
+    const n=problems.filter(p=>p.cat===c).length;
+    return '<div class="bar-row"><span class="bl">'+esc(c)+'</span>'+
+      '<div class="bar-track"><div class="bar-fill" style="width:'+(n/max*100)+'%;background:'+CAT_COLORS[c]+'"></div></div>'+
+      '<span class="bv">'+n+'</span></div>';
+  }).join('');
+  const hs=problems.filter(p=>p.level==='高'&&p.status!=='已闭环').slice(0,8);
+  $('tbHighRisk').innerHTML=hs.map(p=>'<tr><td>'+esc(p.title)+'</td>'+
+    '<td><span class="badge b-blue">'+esc(p.cat)+'</span></td><td>'+statusBadge(p.status)+'</td></tr>').join('');
+  $('rpHighEmpty').style.display=hs.length?'none':'block';
+}
+function exportMd(){
+  const lines=['# 企业问题自检 · 风险报告','', '生成时间：'+today()+'','',
+    '## 总览','- 问题总数：'+problems.length,
+    '- 高风险未闭环：'+problems.filter(p=>p.level==='高'&&p.status!=='已闭环').length,
+    '- 整改闭环率：'+(problems.length?Math.round(problems.filter(p=>p.status==='已闭环').length/problems.length*100):0)+'%','',
+    '## 各类别分布'];
+  CATS.forEach(c=>lines.push('- '+c+'：'+problems.filter(p=>p.cat===c).length+' 条'));
+  lines.push('','## 高风险问题清单（未闭环）');
+  problems.filter(p=>p.level==='高'&&p.status!=='已闭环').forEach(p=>
+    lines.push('- ['+p.cat+'/'+p.status+'] '+p.title+'（'+p.date+'）'));
+  const blob=new Blob([lines.join('\n')],{type:'text/markdown;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='风险报告_'+today()+'.md';a.click();URL.revokeObjectURL(a.href);
+  toast('Markdown 报告已导出');
+}
+
+/* ---------------- 页面切换 / 导航 ---------------- */
+function goPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const pg=$('page-'+name);if(pg)pg.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===name));
+  $('content').scrollTop=0;
+  if(name==='reports')renderReports();
+}
+/* ---------------- 全局事件委托：data-act / data-page 统一分发（修复按钮点不动） ---------------- */
+function rowId(el){const tr=el.closest('tr');return tr?tr.getAttribute('data-id'):null;}
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act],[data-page]');if(!el)return;
+  const act=el.dataset.act,page=el.dataset.page;
+  /* 侧边栏父项：展开/收起子菜单 */
+  if(el.classList.contains('nav-item')&&el.querySelector('.chev')){
+    const sub=document.querySelector('.sub-items[data-for="'+el.dataset.page+'"]');
+    if(sub){sub.classList.toggle('show');el.classList.toggle('open');}
+  }
+  switch(act){
+    case 'quiz':location.href='quiz.html';return;
+    case 'new-task':openTaskModal();return;
+    case 'new-problem':openProblemModal();return;
+    case 'seed-problems':seedMore();return;
+    case 'view-report':goPage('reports');return;
+    case 'refresh-task':{renderAll();toast('任务数据已刷新');return;}
+    case 'start-task':case 'continue-task':{
+      const t=tasks.find(x=>x.id===rowId(el));if(!t)return;
+      t.status='进行中';save(TASK_KEY,tasks);renderAll();toast('任务已开始：'+t.name);return;}
+    case 'del-task':{
+      const t=tasks.find(x=>x.id===rowId(el));if(!t)return;
+      if(!confirm('确认删除任务「'+t.name+'」？'))return;
+      tasks=tasks.filter(x=>x.id!==t.id);save(TASK_KEY,tasks);renderAll();toast('任务已删除');return;}
+    case 'fix-start':{
+      const p=problems.find(x=>x.id===rowId(el));if(!p)return;
+      p.status='整改中';save(PROB_KEY,problems);renderAll();toast('已进入整改：'+p.title.slice(0,18));return;}
+    case 'fix-close':{
+      const p=problems.find(x=>x.id===rowId(el));if(!p)return;
+      p.status='已闭环';save(PROB_KEY,problems);renderAll();toast('问题已闭环 ✓');return;}
+    case 'del-problem':{
+      const p=problems.find(x=>x.id===rowId(el));if(!p)return;
+      if(!confirm('确认删除该问题？'))return;
+      problems=problems.filter(x=>x.id!==p.id);save(PROB_KEY,problems);renderAll();toast('问题已删除');return;}
+  }
+  if(page){
+    if(el.dataset.filter==='高'){$('fLevel').value='高';renderProblems();}
+    goPage(page);
+  }
+  if(window.innerWidth<=820){$('sidebar').classList.add('hide');$('sideMask').style.display='none';}
+});
+/* 环图扇区 / 分类列表点选联动 */
+document.addEventListener('click',e=>{
+  const c=e.target.closest('[data-cat]');if(!c)return;
+  focusCat=c.dataset.cat;renderDonut();
+});
+/* 筛选下拉联动：任一筛选变化立即重渲染（修复等级中/低、类型切换列表无反应） */
+[['fTaskStatus','renderTasks'],['fTaskType','renderTasks'],
+ ['fCat','renderProblems'],['fLevel','renderProblems'],['fPStatus','renderProblems']
+].forEach(([id,fn])=>{const el=$(id);if(el)el.addEventListener('change',()=>window[fn]());});
+/* 任务行内状态下拉：改状态即保存 */
+document.addEventListener('change',e=>{
+  const s=e.target.closest('select[data-act="set-task-status"]');if(!s)return;
+  const t=tasks.find(x=>x.id===rowId(s));if(!t)return;
+  t.status=s.value;save(TASK_KEY,tasks);renderAll();
+  toast('状态已更新：「'+t.name.slice(0,14)+'」→ '+s.value);
+});
+$('btnMenu').onclick=()=>{
+  if(window.innerWidth<=820){const s=$('sidebar');s.classList.toggle('hide');
+    $('sideMask').style.display=s.classList.contains('hide')?'none':'block';}
+  else $('sidebar').classList.toggle('hide');
+};
+$('sideMask').onclick=()=>{$('sidebar').classList.add('hide');$('sideMask').style.display='none';};
+
+/* ---------------- 顶栏搜索 / 头像 ---------------- */
+$('globalSearch').addEventListener('input',()=>{renderToday();renderTasks();renderProblems();});
+$('avatar').onclick=e=>{e.stopPropagation();$('avatarMenu').classList.toggle('show');};
+document.addEventListener('click',()=>$('avatarMenu').classList.remove('show'));
+$('btnLogout').onclick=()=>{localStorage.removeItem('qc_token');localStorage.removeItem('qc_user');location.href='login.html';};
+
+/* ---------------- 弹窗 ---------------- */
+function openModal(id){$(id).classList.add('show');}
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('.modal-mask').classList.remove('show'));
+document.querySelectorAll('.modal-mask').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show');}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-mask.show').forEach(m=>m.classList.remove('show'));});
+function openTaskModal(){$('tkDue').value=today();$('tkName').value='';openModal('maskTask');$('tkName').focus();}
+function openProblemModal(){$('pbTitle').value='';openModal('maskProblem');$('pbTitle').focus();}
+$('btnSaveTask').onclick=()=>{
+  const name=$('tkName').value.trim();if(!name){toast('请填写任务名称');return;}
+  tasks.unshift({id:'u'+Date.now(),name,type:$('tkType').value,status:'待开始',due:$('tkDue').value||today(),by:ME.name||'我'});
+  save(TASK_KEY,tasks);$('maskTask').classList.remove('show');renderAll();goPage('tasks');toast('任务已创建');
+};
+$('btnSaveProblem').onclick=()=>{
+  const title=$('pbTitle').value.trim();if(!title){toast('请填写问题描述');return;}
+  problems.unshift({id:'u'+Date.now(),title,cat:$('pbCat').value,level:$('pbLevel').value,status:'待整改',date:today()});
+  save(PROB_KEY,problems);$('maskProblem').classList.remove('show');renderAll();toast('问题已入库');
+};
+
+/* ---------------- 快速自检 ---------------- */
+document.querySelectorAll('input[name=scope]').forEach(r=>r.addEventListener('change',()=>{
+  document.querySelectorAll('.radio-pill').forEach(p=>{const i=p.querySelector('input[type=radio]');
+    if(i)p.classList.toggle('on',i.checked);});
+}));
+function quickCreate(draft){
+  const cat=$('qCat').value,scope=document.querySelector('input[name=scope]:checked').value;
+  const risk=$('qRisk').checked;
+  const name=cat.replace('类','')+'自检 · '+scope.replace('范围','')+(draft?'（草稿）':'');
+  tasks.unshift({id:'u'+Date.now(),name,type:cat,status:draft?'待开始':'进行中',due:today(),by:ME.name||'我',
+    note:'范围确认：'+scope+(risk?' · 已启用风险等级提示':'')});
+  save(TASK_KEY,tasks);renderAll();goPage('tasks');
+  toast(draft?'草稿已保存到「自检任务」':'检查已提交，任务进行中'+(risk?'（高风险项将标红提醒）':''));
+}
+$('btnQuickSubmit').onclick=()=>quickCreate(false);
+$('btnQuickDraft').onclick=()=>quickCreate(true);
+
+/* ---------------- 报告导出 / 设置 ---------------- */
+$('btnExportMd').onclick=exportMd;
+$('btnPrint').onclick=()=>window.print();
+$('btnExportJson').onclick=()=>{
+  const blob=new Blob([JSON.stringify({tasks,problems,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='问题自检数据_'+today()+'.json';a.click();URL.revokeObjectURL(a.href);
+};
+$('btnReseed').onclick=()=>{
+  if(!confirm('确认重置为演示数据？当前任务与问题将被覆盖。'))return;
+  localStorage.removeItem(SEED_KEY);tasks=[];problems=[];seed();renderAll();toast('已重置为演示数据');
+};
+$('btnWipe').onclick=()=>{
+  if(!confirm('⚠ 确认清空全部任务与问题？此操作不可恢复。'))return;
+  tasks=[];problems=[];save(TASK_KEY,tasks);save(PROB_KEY,problems);renderAll();toast('已清空全部数据');
+};
+
+/* ---------------- AI 小暹（本平台专属助手） ---------------- */
+$('catBtn').onclick=()=>$('catBox').classList.toggle('show');
+async function catSend(){
+  const t=$('catText').value.trim();if(!t)return;
+  $('catText').value='';
+  const box=$('catMsgs');
+  box.insertAdjacentHTML('beforeend','<div class="msg user">'+esc(t)+'</div>');
+  box.scrollTop=box.scrollHeight;
+  const hist=[...box.querySelectorAll('.msg')].slice(-8).map(m=>({
+    role:m.classList.contains('user')?'user':'assistant',content:m.textContent}));
+  const hdrs={'Content-Type':'application/json'};
+  try{
+    const tk=localStorage.getItem('qc_token');if(tk)hdrs['Authorization']='Bearer '+tk;
+    const ac=localStorage.getItem('qc_access_code');if(ac)hdrs['X-Access-Code']=ac;
+  }catch(e){}
+  try{
+    const r=await fetch('/api/assistant/chat',{method:'POST',headers:hdrs,
+      body:JSON.stringify({message:t,history:hist.slice(0,-1)})});
+    if(!r.ok){
+      const d=await r.json().catch(()=>({}));
+      const msg=r.status===401?'登录状态已过期，请刷新页面重新登录喵'
+        :r.status===429?(d.detail||'今日 AI 次数已用完，明天再来喵')
+        :(d.detail||'（连接失败，稍后再试喵）');
+      box.insertAdjacentHTML('beforeend','<div class="msg bot">'+esc(msg)+'</div>');
+    }else{
+      const j=await r.json();
+      box.insertAdjacentHTML('beforeend','<div class="msg bot">'+esc(j.reply||'（助手没有返回内容喵）')+'</div>');
+    }
+  }catch(e){
+    box.insertAdjacentHTML('beforeend','<div class="msg bot">（网络异常，请稍后再试喵~）</div>');
+  }
+  box.scrollTop=box.scrollHeight;
+}
+$('catSend').onclick=catSend;
+$('catText').addEventListener('keydown',e=>{if(e.key==='Enter')catSend();});
+document.querySelectorAll('.cat-chips button').forEach(b=>b.onclick=()=>{$('catText').value=b.dataset.q;catSend();});
+
+/* ---------------- 启动 ---------------- */
+renderAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+# ===== 密钥与凭据（绝不入库）=====
+backend/llm_key.txt
+.env
+.env.*
+*.key
+*_key.txt
+
+# ===== 运行时数据 =====
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+backend/uploads/
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+_venv/
+_venv*/
+.venv/
+venv/
+
+# ===== 调试残留脚本 =====
+tools/_c*.js
+tools/_check.js
+tools/_v
+_c*.js
+_check.js
+
+# ===== 编辑器 / 系统 =====
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.log

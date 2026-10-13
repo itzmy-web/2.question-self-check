@@ -1,0 +1,11 @@
+# Question self-check app - dependencies
+fastapi>=0.110
+uvicorn[standard]>=0.27
+python-multipart>=0.0.9
+
+# Document parsing (PDF / Word upload)
+pypdf>=4.0
+python-docx>=1.1
+
+# Image preprocessing (downscale + compress before vision-model OCR)
+Pillow>=10.0
