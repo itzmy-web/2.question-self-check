@@ -57,7 +57,27 @@ body{display:flex;overflow:hidden;background:#f6f9ff}
 .btn-login:hover{transform:translateY(-1px);background:#2f74ec;box-shadow:0 10px 22px rgba(59,130,246,.35)}
 .btn-login:active{transform:translateY(0)}
 .btn-login:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
-.agree2{margin-top:18px;text-align:center;font-size:12px;color:#a5b1c4}
+/* 协议同意对话框（主题与项目一致：浅蓝白 + #2f6bff） */
+.agree-dlg{margin-top:16px;padding:12px 14px;background:#f5f9ff;border:1px solid #e3eaf5;border-radius:12px}
+.agree-dlg-item{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#7c8aa5;line-height:1.7;cursor:pointer;user-select:none}
+.agree-dlg-item input{accent-color:#2f6bff;width:15px;height:15px;margin-top:2px;flex:none;cursor:pointer}
+.agree-dlg-item a{color:#2f6bff;text-decoration:underline;cursor:pointer;font-weight:600}
+.agree-dlg-item a:hover{color:#1c56d6}
+.agree-note{margin-top:8px;text-align:center;font-size:11.5px;color:#a5b1c4}
+/* 协议全文弹窗 */
+.agree-mask{position:fixed;inset:0;background:rgba(28,43,69,.45);display:none;place-items:center;z-index:200;padding:20px}
+.agree-mask.show{display:grid}
+.agree-modal{background:#fff;border-radius:18px;max-width:520px;width:100%;max-height:76vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(28,43,69,.28);animation:agreeIn .25s ease}
+@keyframes agreeIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+.agree-modal h3{padding:20px 24px 14px;font-size:17px;font-weight:800;color:#1c2b45;border-bottom:1px solid #edf3fc;display:flex;align-items:center;gap:8px}
+.agree-modal h3 .x{margin-left:auto;color:#a5b1c4;font-size:18px;font-weight:400;cursor:pointer;line-height:1}
+.agree-modal h3 .x:hover{color:#5b6b85}
+.agree-body{overflow-y:auto;padding:18px 24px;font-size:13px;color:#5b6b85;line-height:2}
+.agree-body h4{font-size:13.5px;color:#1c2b45;margin:14px 0 4px}
+.agree-body h4:first-child{margin-top:0}
+.agree-foot{padding:14px 24px 20px;border-top:1px solid #edf3fc;text-align:center}
+.agree-foot button{width:100%;height:42px;border:none;border-radius:9px;cursor:pointer;font-size:15px;font-weight:700;color:#fff;background:#3b82f6;box-shadow:0 6px 16px rgba(59,130,246,.28);font-family:inherit;transition:.15s}
+.agree-foot button:hover{background:#2f74ec;transform:translateY(-1px)}
 .guest-line{margin-top:14px;text-align:center}
 .guest-line a{font-size:13px;color:#2f6bff;text-decoration:none;cursor:pointer}
 .guest-line a:hover{text-decoration:underline}
@@ -175,7 +195,9 @@ body{display:flex;overflow:hidden;background:#f6f9ff}
       </div>
       <div class="err" id="errPwd"></div>
       <button class="btn-login" id="btnLogin">登 录</button>
-      <div class="agree2">登录即表示同意使用规范</div>
+      <div class="agree-dlg">
+        <label class="agree-dlg-item"><input type="checkbox" id="agreePwd"><span>我已阅读并同意 <a href="javascript:void(0)" onclick="event.stopPropagation();showAgree('user')">《用户协议》</a> 与 <a href="javascript:void(0)" onclick="event.stopPropagation();showAgree('privacy')">《隐私政策》</a>，并授权使用本服务完成注册 / 登录。</span></label>
+      </div>
     </div>
 
     <!-- 手机验证码 -->
@@ -194,7 +216,10 @@ body{display:flex;overflow:hidden;background:#f6f9ff}
       <div class="hint" id="codeHint" style="display:none"></div>
       <div class="err" id="errPhone"></div>
       <button class="btn-login" id="phoneLogin" style="letter-spacing:2px">登录 / 注册</button>
-      <div class="agree2">未注册手机号验证通过后自动注册</div>
+      <div class="agree-dlg">
+        <label class="agree-dlg-item"><input type="checkbox" id="agreePhone"><span>我已阅读并同意 <a href="javascript:void(0)" onclick="event.stopPropagation();showAgree('user')">《用户协议》</a> 与 <a href="javascript:void(0)" onclick="event.stopPropagation();showAgree('privacy')">《隐私政策》</a>，并授权使用本服务完成注册 / 登录。</span></label>
+      </div>
+      <div class="agree-note">未注册手机号验证通过后自动注册</div>
     </div>
 
     <!-- 微信扫码 -->
@@ -224,6 +249,15 @@ body{display:flex;overflow:hidden;background:#f6f9ff}
     <div class="guest-line"><a id="guest">游客一键体验 →</a></div>
   </div>
 </section>
+
+<!-- 协议全文弹窗（主题与项目一致） -->
+<div class="agree-mask" id="agreeMask" onclick="if(event.target===this)closeAgree()">
+  <div class="agree-modal">
+    <h3><span id="agreeTitle">📄 用户协议</span><span class="x" onclick="closeAgree()">✕</span></h3>
+    <div class="agree-body" id="agreeBody"></div>
+    <div class="agree-foot"><button onclick="agreeAndClose()">我已阅读并同意</button></div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 <script>
@@ -266,6 +300,7 @@ async function login(){
   const acc=$('account').value.trim(),pwd=$('password').value.trim();
   $('errPwd').textContent='';
   if(!acc||!pwd){$('errPwd').textContent='请输入账号和密码';return;}
+  if(!$('agreePwd').checked){$('errPwd').textContent='请先阅读并同意《用户协议》与《隐私政策》';return;}
   $('btnLogin').disabled=true;$('btnLogin').textContent='登录中…';
   try{
     const r=await fetch('/api/auth/password-login',{
@@ -315,6 +350,7 @@ $('phoneLogin').onclick=async()=>{
   const phone=$('phone').value.trim(),code=$('code').value.trim();
   if(!phoneRe.test(phone)){$('errPhone').textContent='请输入正确的 11 位手机号';return;}
   if(!/^\d{4,6}$/.test(code)){$('errPhone').textContent='请输入收到的验证码';return;}
+  if(!$('agreePhone').checked){$('errPhone').textContent='请先阅读并同意《用户协议》与《隐私政策》';return;}
   $('phoneLogin').disabled=true;
   try{
     const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone,code})});
@@ -414,8 +450,29 @@ $('guest').onclick=async()=>{
     }
   }catch(e){toast('网络异常，请稍后再试');}
 };
-/* 已登录直接进工作台 */
-try{if(localStorage.getItem(TOKEN_KEY)){location.href='index.html';}}catch(e){}
+/* 每次打开登录页都只显示登录界面：清除本地会话 token，杜绝「已登录直接进工作台」的自动跳转
+   （不管上次是否用完/退出，点开链接一律是登录界面） */
+try{localStorage.removeItem(TOKEN_KEY);localStorage.removeItem(USER_KEY);}catch(e){}
+
+/* ---------------- 协议同意对话框 ---------------- */
+const AGREE_TEXT={
+  user:{title:'📄 用户协议',body:'<h4>一、服务说明</h4>问题自检平台（以下简称「本平台」）为企业提供问题自检、分类诊断与整改跟踪的演示服务。您在使用本平台前，请仔细阅读并同意本协议全部条款。<h4>二、账号与安全</h4>您应对账号下的所有操作负责，妥善保管登录凭证。演示环境中，任意符合格式的账号密码或手机验证码均可登录，请勿录入真实敏感信息。<h4>三、使用规范</h4>不得利用本平台从事违法违规活动，不得干扰平台正常运行，不得爬取或复制平台数据用于商业用途。<h4>四、免责声明</h4>本平台为演示环境，数据仅供功能展示，不构成任何管理或法律建议。因使用本平台产生的任何决策由使用者自行承担。<h4>五、协议变更</h4>本协议可能随功能升级而更新，更新后将在登录页公示，继续使用即视为接受。'},
+  privacy:{title:'🔒 隐私政策',body:'<h4>一、信息收集</h4>本平台仅收集登录所需的最小信息：账号名、手机号（演示环境可任意填写），以及您在使用过程中主动录入的问题与整改记录。<h4>二、信息用途</h4>上述信息仅用于身份验证、功能实现与数据统计，不会用于任何其他用途。<h4>三、信息存储</h4>演示数据存储于本地数据库，不上传至第三方；正式环境将按等保要求加密存储。<h4>四、信息保护</h4>我们采取合理的技术与管理措施保护您的信息，防止未经授权的访问、泄露或篡改。<h4>五、联系我们</h4>如对隐私政策有任何疑问，可通过平台管理员反馈渠道联系。'}
+};
+function showAgree(type){
+  const t=AGREE_TEXT[type];if(!t)return;
+  $('agreeTitle').textContent=t.title;
+  $('agreeBody').innerHTML=t.body;
+  $('agreeMask').classList.add('show');
+}
+function closeAgree(){$('agreeMask').classList.remove('show');}
+function agreeAndClose(){
+  closeAgree();
+  const cb=$(activeTab==='pwd'?'agreePwd':'agreePhone');
+  if(cb)cb.checked=true;
+  toast('已同意协议，可直接登录');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAgree();});
 </script>
 </body>
 </html>
