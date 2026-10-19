@@ -2078,7 +2078,7 @@ function fallbackCopy(t){
 function weakMarkdownText(){
   const d=window._lastDetail||[], asp=window._lastAspects||[];
   const bads=d.filter(x=>x.result==='bad');
-  const L=['# 薄弱项复习清单','','> 生成时间：'+new Date().toLocaleString()+' · 来自「问题自检」',''];
+  const L=['# 薄弱项复习清单','','> 生成时间：'+new Date().toLocaleString()+' · 来自「巡检台」',''];
   const weak=asp.filter(a=>a.rate<80).sort((a,b)=>a.rate-b.rate);
   if(weak.length){
     L.push('## 薄弱知识点','');

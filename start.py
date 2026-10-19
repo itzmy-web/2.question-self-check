@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-问题自检项目 · 本地全栈启动器
+巡检台项目 · 本地全栈启动器
 用法：
-    1) 终端进入本文件夹（问题自检项目）
+    1) 终端进入本文件夹（巡检台项目）
     2) 首次运行先装依赖：  pip install -r requirements.txt
     3) 运行：  python start.py
     4) 浏览器自动打开登录页；未自动打开就访问终端提示的地址
@@ -118,7 +118,7 @@ def main():
     if exist:
         url = "http://127.0.0.1:%d/login.html" % exist
         print("=" * 50)
-        print("  检测到「问题自检」已在运行，直接复用：")
+        print("  检测到「巡检台」已在运行，直接复用：")
         print("  访问地址：", url)
         print("  （要用最新代码，请先在原终端按 Ctrl+C 停止旧实例，再重新运行本脚本）")
         print("=" * 50)
@@ -129,7 +129,7 @@ def main():
     url = "http://127.0.0.1:%d/login.html" % port
 
     print("=" * 50)
-    print("  问题自检 · 全栈服务启动中…")
+    print("  巡检台 · 全栈服务启动中…")
     print("  访问地址：", url)
     print("  停止服务：Ctrl+C")
     print("=" * 50)

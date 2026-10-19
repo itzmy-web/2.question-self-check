@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>问题自检平台 · 企业问题自检中心</title>
+<title>巡检台 · 标准化智能自查工作台</title>
 <style>
 :root{
   --primary:#2f6bff; --primary-dk:#1f4fd8; --navy:#1c2b45; --navy2:#16223a;
@@ -161,7 +161,7 @@ tbody tr:hover{background:#f8faff}
 <aside id="sidebar">
   <div class="logo">
     <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5l8-3z" fill="#fff" opacity=".9"/><path d="M8.5 12l2.4 2.4 4.6-5" stroke="#2563eb" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg></span>
-    <b>问题自检平台</b>
+    <b>巡检台</b>
   </div>
   <nav>
     <div class="nav-sec">工作台</div>
@@ -202,7 +202,7 @@ tbody tr:hover{background:#f8faff}
       系统设置
     </div>
   </nav>
-  <div class="side-foot">企业问题自检 · v3.0</div>
+  <div class="side-foot">巡检台 · v3.0</div>
 </aside>
 <div class="sidebar-mask" id="sideMask"></div>
 
@@ -230,8 +230,8 @@ tbody tr:hover{background:#f8faff}
     <section class="page active" id="page-dashboard">
       <div class="page-head">
         <div>
-          <h1>问题自检中心</h1>
-          <div class="sub">快速识别风险项，跟踪整改进度</div>
+          <h1>巡检台</h1>
+          <div class="sub">标准化智能自查工作台 · 快速识别风险项，跟踪整改进度</div>
         </div>
         <button class="btn btn-primary" data-act="new-task">开始自检</button>
       </div>
@@ -413,7 +413,7 @@ tbody tr:hover{background:#f8faff}
         <div class="card">
           <b style="font-size:15px">站点信息</b>
           <table style="margin-top:10px">
-            <tr><td style="color:var(--muted);width:110px">平台名称</td><td>问题自检平台</td></tr>
+            <tr><td style="color:var(--muted);width:110px">平台名称</td><td>巡检台</td></tr>
             <tr><td style="color:var(--muted)">当前用户</td><td id="setUser">-</td></tr>
             <tr><td style="color:var(--muted)">访问门槛</td><td>已关闭（自部署服务器模式）</td></tr>
             <tr><td style="color:var(--muted)">版本</td><td>v3.0 企业版</td></tr>
@@ -473,7 +473,7 @@ tbody tr:hover{background:#f8faff}
 <!-- ============ AI 小暹 ============ -->
 <button id="catBtn" title="AI 助手小暹">🐱</button>
 <div id="catBox">
-  <div class="cat-head">小暹 · 问题自检平台助手（喵~）</div>
+  <div class="cat-head">小暹 · 巡检台助手（喵~）</div>
   <div class="cat-msgs" id="catMsgs">
     <div class="msg bot">喵~ 我是小暹，本平台的专属助手。怎么建任务、问题库怎么用、报告怎么导出，都可以问我；闲聊也接，别的项目我可不管喵。</div>
   </div>
@@ -491,7 +491,7 @@ tbody tr:hover{background:#f8faff}
 
 <script>
 /* ==================================================================
-   企业问题自检平台 · 前端工作台
+   巡检台 · 前端工作台
    数据：localStorage（qc_tasks / qc_problems），首次进入自动生成演示数据
    老版「文档抽题自检」完整保留在 quiz.html，由侧边栏「智能工具」进入
 ================================================================== */
@@ -702,7 +702,7 @@ function renderReports(){
   $('rpHighEmpty').style.display=hs.length?'none':'block';
 }
 function exportMd(){
-  const lines=['# 企业问题自检 · 风险报告','', '生成时间：'+today()+'','',
+  const lines=['# 巡检台 · 风险报告','', '生成时间：'+today()+'','',
     '## 总览','- 问题总数：'+problems.length,
     '- 高风险未闭环：'+problems.filter(p=>p.level==='高'&&p.status!=='已闭环').length,
     '- 整改闭环率：'+(problems.length?Math.round(problems.filter(p=>p.status==='已闭环').length/problems.length*100):0)+'%','',
@@ -836,7 +836,7 @@ $('btnPrint').onclick=()=>window.print();
 $('btnExportJson').onclick=()=>{
   const blob=new Blob([JSON.stringify({tasks,problems,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='问题自检数据_'+today()+'.json';a.click();URL.revokeObjectURL(a.href);
+  a.download='巡检台数据_'+today()+'.json';a.click();URL.revokeObjectURL(a.href);
 };
 $('btnReseed').onclick=()=>{
   if(!confirm('确认重置为演示数据？当前任务与问题将被覆盖。'))return;

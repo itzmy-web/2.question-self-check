@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-问题自检 · 生产启动入口（云沙箱 / uvicorn 部署用）
+巡检台 · 生产启动入口（云沙箱 / uvicorn 部署用）
 
 沙箱通过 PORT 环境变量指定唯一对外端口，并且要求监听 0.0.0.0。
 这里显式读取 PORT，避免依赖 `--port $PORT` 这种 shell 变量展开

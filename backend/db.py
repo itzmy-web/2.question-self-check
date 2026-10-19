@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-问题自检 · SQLite 持久化层
+巡检台 · SQLite 持久化层
 
 使用标准库 sqlite3，零额外依赖，适合本地运行与离线/国内部署。
 所有访问都「按需开连接、用完即关」，配合 WAL + busy_timeout 兼容 uvicorn 多worker 并发。
